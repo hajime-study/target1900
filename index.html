@@ -2,94 +2,107 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-
-    <!-- 表示設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- ★ PWA（iOS対応 強化版）★ -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1e88e5">
 
-    <!-- ★ ホーム画面アイコン（iOS用）★ -->
-    <!-- ⬆ iOS は manifest の icons を無視するので “絶対パス PNG” を複数サイズ指定  -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://hajime-study.github.io/target1900/target1900.png">
     <link rel="apple-touch-icon" sizes="152x152" href="https://hajime-study.github.io/target1900/target1900.png">
     <link rel="apple-touch-icon" sizes="120x120" href="https://hajime-study.github.io/target1900/target1900.png">
-
-    <!-- Android / Chrome 用 -->
     <link rel="icon" type="image/png" href="https://hajime-study.github.io/target1900/target1900.png">
-
-    <!-- manifest.json（PWA必須） -->
     <link rel="manifest" href="manifest.json">
 
     <title>はじめ1900</title>
 
-    <!-- CSS -->
+    <!-- FontAwesome (アイコン用) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <!-- ★ アプリ起動アニメーション（2秒以内で消える）★ -->
+    <!-- 起動アニメーション -->
     <div id="splashScreen">
-        <h1 class="splashTitle">はじめ1900</h1>
+        <h1 class="splashTitle">はじめ1900 <i class="fas fa-book-open"></i></h1>
     </div>
 
-    <!-- ヘッダー -->
-    <header id="appHeader">
+    <!-- メインコンテナ -->
+    <div class="container">
         <h1>はじめ1900</h1>
-    </header>
 
-    <main>
-        <!-- 設定エリア -->
-        <section id="settings">
-            <label>モード選択：
-                <select id="mainMode">
-                    <option value="">選択</option>
-                    <option value="test">テストモード</option>
-                    <option value="memorize">暗記モード</option>
-                </select>
-            </label>
+        <div class="layout-wrapper">
+            <!-- ▼ 左側：設定エリア ▼ -->
+            <div class="left-pane" id="settings">
+                <div class="input-group">
+                    <label><i class="fas fa-sliders-h"></i> モード選択：</label>
+                    <select id="mainMode">
+                        <option value="">選択してください</option>
+                        <option value="test">テストモード</option>
+                        <option value="memorize">暗記モード</option>
+                    </select>
+                </div>
 
-            <!-- モードに応じて追加される部分 -->
-            <div id="subSettings"></div>
+                <!-- モードに応じて追加される部分 -->
+                <div id="subSettings"></div>
 
-            <div id="rangeSection">
-                <label>開始番号：<input type="number" id="startNumber" value="1"></label>
-                <label>終了番号：<input type="number" id="endNumber" value="1900"></label>
+                <div class="input-group" id="rangeSection">
+                    <label><i class="fas fa-list-ol"></i> 出題範囲：</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="startNumber" value="1" placeholder="開始">
+                        <span>〜</span>
+                        <input type="number" id="endNumber" value="1900" placeholder="終了">
+                    </div>
+                </div>
+
+                <div class="input-group" id="numQuestionsLabel">
+                    <label><i class="fas fa-layer-group"></i> 出題数：</label>
+                    <input type="number" id="numQuestions" value="10">
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="weakOnly"> 
+                        <i class="fas fa-star" style="color: #ff9800;"></i> 苦手ボックスのみから出題
+                    </label>
+                </div>
+
+                <button id="startBtn" class="btn-pop btn-pop-blue" style="width: 100%; margin-top: 15px;">
+                    開始 <i class="fas fa-play"></i>
+                </button>
             </div>
 
-            <label id="numQuestionsLabel">出題数：
-                <input type="number" id="numQuestions" value="10">
-            </label>
+            <!-- ▼ 右側：出題・暗記エリア ▼ -->
+            <div class="right-pane">
+                
+                <!-- 初期状態のプレースホルダー -->
+                <div class="empty-state" id="empty-state">
+                    <i class="fas fa-pencil-alt"></i><br>
+                    左で設定をして<br>「開始」を押してください
+                </div>
 
-            <label>
-                <input type="checkbox" id="weakOnly"> 苦手ボックスのみから出題
-            </label>
+                <!-- テストモード -->
+                <section id="quiz" class="hidden">
+                    <h2><i class="fas fa-pen"></i> テストモード</h2>
+                    <div id="quizContainer"></div>
+                </section>
 
-            <button id="startBtn">開始</button>
-        </section>
+                <!-- 暗記モード -->
+                <section id="memorizeSection" class="hidden">
+                    <h2><i class="fas fa-book"></i> 暗記モード</h2>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                        <button id="showAllBtn" class="btn-pop btn-pop-green">すべて表示 <i class="fas fa-eye"></i></button>
+                        <button id="hideAllBtn" class="btn-pop btn-pop-blue">すべて隠す <i class="fas fa-eye-slash"></i></button>
+                    </div>
 
-        <!-- テストモード -->
-        <section id="quiz" class="hidden">
-            <h2>テストモード</h2>
-            <div id="quizContainer"></div>
-        </section>
-
-        <!-- 暗記モード -->
-        <section id="memorizeSection" class="hidden">
-            <h2>暗記モード</h2>
-
-            <button id="showAllBtn">すべて表示</button>
-            <button id="hideAllBtn">すべて隠す</button>
-
-            <div id="memorizeBox"></div>
-        </section>
-    </main>
+                    <div id="memorizeBox"></div>
+                </section>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
-
     <script>
         /* 起動アニメーション */
         window.addEventListener("load", () => {
@@ -101,6 +114,5 @@
             }, 1300);
         });
     </script>
-
 </body>
 </html>
