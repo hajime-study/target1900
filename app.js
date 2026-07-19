@@ -129,7 +129,8 @@ function startNormalMode(format, answerType, weakBox){
         const questionText = isJaEn?q.answer:q.question; 
         const answerText = isJaEn?q.question:q.answer;    
 
-        let html = `<strong>Q${i+1}. ${questionText}</strong>`;
+        // ★ここを q.number に変更しました
+        let html = `<strong>Q${q.number}. ${questionText}</strong>`;
 
         if(answerType==="choice"){
             let options = generateChoices(q, isJaEn);
@@ -223,10 +224,11 @@ function startMemorizeMode(format, weakBox){
         const questionText = isJaEn?q.answer:q.question;
         const answerText = isJaEn?q.question:q.answer;
 
+        // ★ここを q.number に変更しました
         div.innerHTML=`
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <strong>Q${i+1}. ${questionText}</strong>
+                    <strong>Q${q.number}. ${questionText}</strong>
                     <div style="margin-top:10px;">
                         <span class="answer" style="display:none;">${answerText}</span>
                     </div>
