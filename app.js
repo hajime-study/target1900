@@ -24,30 +24,36 @@ mainMode.addEventListener("change", ()=>{
     const mode = mainMode.value;
     if(!mode) return;
 
-    const selectFormat = document.createElement("select");
-    selectFormat.id = "formatSelect";
-    selectFormat.innerHTML = `<option value="">出題形式選択</option>
-        <option value="en-ja">英語→日本語</option>
-        <option value="ja-en">日本語→英語</option>
-        <option value="random">ランダム</option>`;
-    subSettings.appendChild(selectFormat);
+    const selectFormatContainer = document.createElement("div");
+    selectFormatContainer.className = "input-group";
+    
+    selectFormatContainer.innerHTML = `<label><i class="fas fa-exchange-alt"></i> 出題形式：</label>
+        <select id="formatSelect">
+            <option value="">選択してください</option>
+            <option value="en-ja">英語 → 日本語</option>
+            <option value="ja-en">日本語 → 英語</option>
+            <option value="random">ランダム</option>
+        </select>`;
+    subSettings.appendChild(selectFormatContainer);
 
-    selectFormat.addEventListener("change", ()=>{
+    const formatSelect = document.getElementById("formatSelect");
+
+    formatSelect.addEventListener("change", ()=>{
         const oldNext = document.getElementById("nextSelect");
         if(oldNext) oldNext.remove();
-        if(!selectFormat.value) return;
+        if(!formatSelect.value) return;
 
         const nextDiv = document.createElement("div");
         nextDiv.id = "nextSelect";
+        nextDiv.className = "input-group";
 
         if(mode==="memorize"){
-            nextDiv.innerHTML = `<label>順序:
+            nextDiv.innerHTML = `<label><i class="fas fa-sort"></i> 順序：</label>
                 <select id="orderSelect">
                     <option value="asc">昇順</option>
                     <option value="desc">降順</option>
                     <option value="random">ランダム</option>
-                </select>
-            </label>`;
+                </select>`;
             subSettings.appendChild(nextDiv);
 
             const orderSelect = document.getElementById("orderSelect");
@@ -55,12 +61,11 @@ mainMode.addEventListener("change", ()=>{
             orderSelect.addEventListener("change", toggleNumInput);
             toggleNumInput();
         } else {
-            nextDiv.innerHTML = `<label>回答方式:
+            nextDiv.innerHTML = `<label><i class="fas fa-keyboard"></i> 回答方式：</label>
                 <select id="answerTypeSelect">
                     <option value="input">自由入力</option>
                     <option value="choice">選択肢</option>
-                </select>
-            </label>`;
+                </select>`;
             subSettings.appendChild(nextDiv);
             numQuestionsLabel.style.display="block";
         }
@@ -76,7 +81,7 @@ startBtn.addEventListener("click", ()=>{
     const answerType = mode==="test"?document.getElementById("answerTypeSelect")?.value || "input":"input";
 
     let startNum = parseInt(document.getElementById("startNumber").value) || 1;
-    let endNum = parseInt(document.getElementById("endNumber").value) || 10;
+    let endNum = parseInt(document.getElementById("endNumber").value) || 1900;
     let num = parseInt(document.getElementById("numQuestions").value) || 10;
 
     quizWords = words.filter(w=>w.number>=startNum && w.number<=endNum);
@@ -85,6 +90,9 @@ startBtn.addEventListener("click", ()=>{
     if(weakOnly.checked) quizWords = quizWords.filter(w=>weakBox.has(w.number));
 
     if(quizWords.length===0) return alert("範囲内に単語がありません。");
+
+    // プレースホルダーを隠す
+    document.getElementById("empty-state").style.display = "none";
 
     if(mode==="memorize"){
         if(order==="asc") quizWords = quizWords.slice().sort((a,b)=>a.number-b.number);
@@ -114,62 +122,85 @@ function startNormalMode(format, answerType, weakBox){
         const div = document.createElement("div");
         div.classList.add("questionItem");
 
-        // 出題言語と答えの設定
         let isJaEn;
         if(format==="random") isJaEn = Math.random()<0.5;
         else isJaEn = format==="ja-en";
 
-        const questionText = isJaEn?q.answer:q.question;  // 問題
-        const answerText = isJaEn?q.question:q.answer;    // 正解
+        const questionText = isJaEn?q.answer:q.question; 
+        const answerText = isJaEn?q.question:q.answer;    
 
-        let html = `<strong>${q.number}. ${questionText}</strong><br>`;
+        let html = `<strong>Q${i+1}. ${questionText}</strong>`;
 
         if(answerType==="choice"){
             let options = generateChoices(q, isJaEn);
             options = shuffleArray(options);
-            options.forEach(opt=>html+=`<button class="choiceBtn">${opt}</button> `);
-            html+=`<div class="result"></div>`;
+            html += `<div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin-bottom:10px;">`;
+            options.forEach(opt=>html+=`<button class="btn-pop btn-pop-green choiceBtn">${opt}</button>`);
+            html += `</div><div class="result"></div>`;
         } else {
-            html+=`<input type="text" class="userInput" placeholder="ここに入力">
-                   <button class="checkBtn">答え合わせ</button>
+            html+=`<div style="display:flex; gap:10px; margin-bottom:10px;">
+                     <input type="text" class="userInput" placeholder="ここに入力">
+                     <button class="btn-pop btn-pop-blue checkBtn"><i class="fas fa-check"></i></button>
+                   </div>
                    <div class="result"></div>`;
         }
 
-        html+=`<button class="weakBtn">${weakBox.has(q.number)?"苦手解除":"苦手にする"}</button>`;
+        // 苦手ボタン（右寄せ）
+        html+=`<div style="text-align: right; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                  <button class="btn-pop btn-pop-orange weakBtn">
+                      ${weakBox.has(q.number)?"苦手解除 <i class='fas fa-star'></i>":"苦手にする <i class='far fa-star'></i>"}
+                  </button>
+               </div>`;
+        
         div.innerHTML = html;
         quizContainer.appendChild(div);
 
-        // 苦手ボタン
-        div.querySelector(".weakBtn").addEventListener("click", ()=>{
+        // 苦手ボタン処理
+        div.querySelector(".weakBtn").addEventListener("click", function(){
             if(weakBox.has(q.number)){
                 weakBox.delete(q.number);
-                div.querySelector(".weakBtn").innerText="苦手にする";
+                this.innerHTML="苦手にする <i class='far fa-star'></i>";
             } else {
                 weakBox.add(q.number);
-                div.querySelector(".weakBtn").innerText="苦手解除";
+                this.innerHTML="苦手解除 <i class='fas fa-star'></i>";
             }
         });
 
-        // 選択肢ボタン
+        // 選択肢ボタン処理
         const choiceBtns = div.querySelectorAll(".choiceBtn");
         choiceBtns.forEach(btn=>{
             btn.addEventListener("click", e=>{
                 const correct = answerText;
                 const ansDiv = div.querySelector(".result");
-                choiceBtns.forEach(b=>b.style.opacity=0.6);
+                
+                choiceBtns.forEach(b => {
+                    b.style.pointerEvents = "none";
+                    b.style.opacity = 0.5;
+                });
                 e.target.style.opacity = 1;
-                if(e.target.innerText===correct) ansDiv.innerHTML=`<span style="color:green;">正解！</span>`;
-                else ansDiv.innerHTML=`<span style="color:red;">不正解！あなた: ${e.target.innerText} 答え: ${correct}</span>`;
+                
+                if(e.target.innerText===correct) {
+                    ansDiv.innerHTML=`<span style="color:#388e3c;"><i class="far fa-circle"></i> 正解！</span>`;
+                } else {
+                    ansDiv.innerHTML=`<span style="color:#d32f2f;"><i class="fas fa-times"></i> 不正解！答え: ${correct}</span>`;
+                }
             });
         });
 
-        // 自由入力
+        // 自由入力処理
         div.querySelectorAll(".checkBtn").forEach(btn=>{
             btn.addEventListener("click", e=>{
-                const input = div.querySelector(".userInput").value.trim();
+                const inputEl = div.querySelector(".userInput");
+                const input = inputEl.value.trim();
                 const ansDiv = div.querySelector(".result");
-                if(input===answerText) ansDiv.innerHTML=`<span style="color:green;">正解！</span>`;
-                else ansDiv.innerHTML=`<span style="color:red;">不正解！あなた: ${input} 答え: ${answerText}</span>`;
+                
+                if(input===answerText) {
+                    ansDiv.innerHTML=`<span style="color:#388e3c;"><i class="far fa-circle"></i> 正解！</span>`;
+                    inputEl.style.borderColor = "#388e3c";
+                } else {
+                    ansDiv.innerHTML=`<span style="color:#d32f2f;"><i class="fas fa-times"></i> 不正解！答え: ${answerText}</span>`;
+                    inputEl.style.borderColor = "#d32f2f";
+                }
             });
         });
     });
@@ -181,7 +212,7 @@ function startMemorizeMode(format, weakBox){
     document.getElementById("memorizeSection").classList.remove("hidden");
     memorizeBox.innerHTML="";
 
-    quizWords.forEach(q=>{
+    quizWords.forEach((q,i)=>{
         const div = document.createElement("div");
         div.classList.add("questionItem");
 
@@ -192,38 +223,48 @@ function startMemorizeMode(format, weakBox){
         const questionText = isJaEn?q.answer:q.question;
         const answerText = isJaEn?q.question:q.answer;
 
-        div.innerHTML=`<strong>${q.number}. ${questionText}</strong>: <span class="answer" style="display:none;">${answerText}</span>`;
+        div.innerHTML=`
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong>Q${i+1}. ${questionText}</strong>
+                    <div style="margin-top:10px;">
+                        <span class="answer" style="display:none;">${answerText}</span>
+                    </div>
+                </div>
+                <button class="btn-pop btn-pop-orange weakBtn">
+                    ${weakBox.has(q.number)?"苦手解除 <i class='fas fa-star'></i>":"苦手にする <i class='far fa-star'></i>"}
+                </button>
+            </div>
+        `;
         memorizeBox.appendChild(div);
 
+        // クリックで答え表示・非表示（ボタン以外をクリックした時）
         div.addEventListener("click", (e)=>{
-            if(e.target.tagName!=="BUTTON"){
+            if(!e.target.closest('button')){
                 const ans = div.querySelector(".answer");
-                ans.style.display = ans.style.display==="none"?"inline":"none";
+                ans.style.display = ans.style.display==="none"?"inline-block":"none";
             }
         });
 
-        const btn = document.createElement("button");
-        btn.innerText = weakBox.has(q.number)?"苦手解除":"苦手にする";
-        btn.classList.add("weakBtn");
-        btn.addEventListener("click", (e)=>{
+        // 苦手ボタン処理
+        const btn = div.querySelector(".weakBtn");
+        btn.addEventListener("click", ()=>{
             if(weakBox.has(q.number)){
                 weakBox.delete(q.number);
-                btn.innerText="苦手にする";
+                btn.innerHTML="苦手にする <i class='far fa-star'></i>";
             } else {
                 weakBox.add(q.number);
-                btn.innerText="苦手解除";
+                btn.innerHTML="苦手解除 <i class='fas fa-star'></i>";
             }
         });
-        div.appendChild(btn);
     });
 }
 
-showAllBtn.addEventListener("click", ()=>memorizeBox.querySelectorAll(".answer").forEach(el=>el.style.display="inline"));
+showAllBtn.addEventListener("click", ()=>memorizeBox.querySelectorAll(".answer").forEach(el=>el.style.display="inline-block"));
 hideAllBtn.addEventListener("click", ()=>memorizeBox.querySelectorAll(".answer").forEach(el=>el.style.display="none"));
 
 // 選択肢生成関数
 function generateChoices(correctWord, isJaEn){
-    // 問題が英語なら答えは日本語から、問題が日本語なら答えは英語から
     let pool = isJaEn? words.map(w=>w.question) : words.map(w=>w.answer);
     pool = pool.filter(x=>x!== (isJaEn?correctWord.question:correctWord.answer));
     pool = shuffleArray(pool).slice(0,3);
