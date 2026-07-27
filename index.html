@@ -15,101 +15,106 @@
 
     <title>はじめ1900</title>
 
-    <!-- FontAwesome (アイコン用) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
+    <style>
+        .page-wrapper {
+            display: flex;
+            justify-content: center; /* 全体を中央寄せ */
+            align-items: flex-start; /* 上で揃える */
+            gap: 20px; /* 四角形と広告の間の隙間 */
+            padding: 20px;
+        }
+        
+        /* スマホなどの画面が狭いときの対策（縦並びに変更） */
+        @media (max-width: 950px) {
+            .page-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 起動アニメーション -->
     <div id="splashScreen">
         <h1 class="splashTitle">はじめ1900 <i class="fas fa-book-open"></i></h1>
     </div>
 
-    <!-- メインコンテナ -->
-    <div class="container">
-        <h1>はじめ1900</h1>
+    <div class="page-wrapper">
 
-        <div class="layout-wrapper">
-            <!-- ▼ 左側：設定エリア ▼ -->
-            <div class="left-pane" id="settings">
-                <div class="input-group">
-                    <label><i class="fas fa-sliders-h"></i> モード選択：</label>
-                    <select id="mainMode">
-                        <option value="">選択してください</option>
-                        <option value="test">テストモード</option>
-                        <option value="memorize">暗記モード</option>
-                    </select>
-                </div>
+        <div class="container">
+            <h1>はじめ1900</h1>
 
-                <!-- モードに応じて追加される部分 -->
-                <div id="subSettings"></div>
-
-                <div class="input-group" id="rangeSection">
-                    <label><i class="fas fa-list-ol"></i> 出題範囲：</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="number" id="startNumber" value="1" placeholder="開始">
-                        <span>〜</span>
-                        <input type="number" id="endNumber" value="1900" placeholder="終了">
+            <div class="layout-wrapper">
+                <div class="left-pane" id="settings">
+                    <div class="input-group">
+                        <label><i class="fas fa-sliders-h"></i> モード選択：</label>
+                        <select id="mainMode">
+                            <option value="">選択してください</option>
+                            <option value="test">テストモード</option>
+                            <option value="memorize">暗記モード</option>
+                        </select>
                     </div>
+
+                    <div id="subSettings"></div>
+
+                    <div class="input-group" id="rangeSection">
+                        <label><i class="fas fa-list-ol"></i> 出題範囲：</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="startNumber" value="1" placeholder="開始">
+                            <span>〜</span>
+                            <input type="number" id="endNumber" value="1900" placeholder="終了">
+                        </div>
+                    </div>
+
+                    <div class="input-group" id="numQuestionsLabel">
+                        <label><i class="fas fa-layer-group"></i> 出題数：</label>
+                        <input type="number" id="numQuestions" value="10">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="weakOnly"> 
+                            <i class="fas fa-star" style="color: #ff9800;"></i> 苦手ボックスのみから出題
+                        </label>
+                    </div>
+
+                    <button id="startBtn" class="btn-pop btn-pop-blue" style="width: 100%; margin-top: 15px;">
+                        開始 <i class="fas fa-play"></i>
+                    </button>
                 </div>
 
-                <div class="input-group" id="numQuestionsLabel">
-                    <label><i class="fas fa-layer-group"></i> 出題数：</label>
-                    <input type="number" id="numQuestions" value="10">
-                </div>
-
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="weakOnly"> 
-                        <i class="fas fa-star" style="color: #ff9800;"></i> 苦手ボックスのみから出題
-                    </label>
-                </div>
-
-                <button id="startBtn" class="btn-pop btn-pop-blue" style="width: 100%; margin-top: 15px;">
-                    開始 <i class="fas fa-play"></i>
-                </button>
-            </div>
-
-            <!-- ▼ 右側：出題・暗記エリア ▼ -->
-            <div class="right-pane">
-                
-                <!-- ▼ 広告エリア（右端寄せ） ▼ -->
-                <div style="text-align: right; margin-bottom: 15px;">
-                    <!-- admax -->
-                    <script src="https://adm.shinobi.jp/s/325dbf9005396dafc117fe1fdb915397"></script>
-                    <!-- admax -->
-                </div>
-                <!-- ▲ 広告エリアここまで ▲ -->
-
-                <!-- 初期状態のプレースホルダー -->
-                <div class="empty-state" id="empty-state">
-                    <i class="fas fa-pencil-alt"></i><br>
-                    設定をして<br>「開始」を押してください
-                </div>
-
-                <!-- テストモード -->
-                <section id="quiz" class="hidden">
-                    <h2><i class="fas fa-pen"></i> テストモード</h2>
-                    <div id="quizContainer"></div>
-                </section>
-
-                <!-- 暗記モード -->
-                <section id="memorizeSection" class="hidden">
-                    <h2><i class="fas fa-book"></i> 暗記モード</h2>
+                <div class="right-pane">
                     
-                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                        <button id="showAllBtn" class="btn-pop btn-pop-green">すべて表示 <i class="fas fa-eye"></i></button>
-                        <button id="hideAllBtn" class="btn-pop btn-pop-blue">すべて隠す <i class="fas fa-eye-slash"></i></button>
+                    <div class="empty-state" id="empty-state">
+                        <i class="fas fa-pencil-alt"></i><br>
+                        設定をして<br>「開始」を押してください
                     </div>
 
-                    <div id="memorizeBox"></div>
-                </section>
+                    <section id="quiz" class="hidden">
+                        <h2><i class="fas fa-pen"></i> テストモード</h2>
+                        <div id="quizContainer"></div>
+                    </section>
+
+                    <section id="memorizeSection" class="hidden">
+                        <h2><i class="fas fa-book"></i> 暗記モード</h2>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                            <button id="showAllBtn" class="btn-pop btn-pop-green">すべて表示 <i class="fas fa-eye"></i></button>
+                            <button id="hideAllBtn" class="btn-pop btn-pop-blue">すべて隠す <i class="fas fa-eye-slash"></i></button>
+                        </div>
+
+                        <div id="memorizeBox"></div>
+                    </section>
+                </div>
             </div>
         </div>
-    </div>
-
+        <div class="ad-sidebar">
+            <script src="https://adm.shinobi.jp/s/325dbf9005396dafc117fe1fdb915397"></script>
+            </div>
+        </div>
     <script src="app.js"></script>
     <script>
         /* 起動アニメーション */
