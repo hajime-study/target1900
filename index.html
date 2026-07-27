@@ -18,19 +18,46 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
     <style>
+        body {
+            margin: 0; /* 画面全体の余計な余白を消す */
+        }
+
         .page-wrapper {
             display: flex;
-            justify-content: center; /* 全体を中央寄せ */
-            align-items: flex-start; /* 上で揃える */
-            gap: 20px; /* 四角形と広告の間の隙間 */
-            padding: 20px;
+            justify-content: flex-start; /* 左寄せにする */
+            align-items: flex-start;
+            padding: 10px; /* 左側（外側）の余白を最小限の10pxに！ */
+            gap: 20px; /* アプリと広告の間の隙間 */
+        }
+
+        /* アプリ本体（四角形）を最初ぐらい大きく保つ設定 */
+        .container {
+            flex: 1 1 auto; /* 縮ませず、可能な限りスペースを広げる */
+            width: 100%; 
+            margin: 0 !important; /* 元のCSSの「中央寄せ」を強制解除して左にピタッと寄せる */
+        }
+
+        /* 完全に独立した右側の広告エリア */
+        .ad-sidebar {
+            flex: 0 0 auto; /* 広告エリアが押し潰されないように固定 */
+            width: 320px; /* 一般的なPC用広告がすっぽり入る幅（広め） */
+            padding-top: 20px; /* 広告が少し上すぎる場合はここで調整 */
         }
         
-        /* スマホなどの画面が狭いときの対策（縦並びに変更） */
-        @media (max-width: 950px) {
+        /* スマホなど画面が狭いとき（縦並びに変更） */
+        @media (max-width: 1000px) {
             .page-wrapper {
                 flex-direction: column;
                 align-items: center;
+                padding: 10px;
+            }
+            .container {
+                margin: 0 auto !important; /* スマホの時は見栄え良く中央寄せに戻す */
+            }
+            .ad-sidebar {
+                width: 100%;
+                text-align: center; /* 広告を真ん中に */
+                padding-top: 10px;
             }
         }
     </style>
